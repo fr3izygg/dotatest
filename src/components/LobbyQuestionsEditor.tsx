@@ -249,6 +249,9 @@ export default function LobbyQuestionsEditor({ questions, onApply, onClose }: Pr
                           ? Где взять медиа
                         </button>
                       </div>
+                      <div className="text-gray-500 text-[11px]">
+                        Для локального файла создайте папку `media/video/` в корне проекта и укажите путь типа `media/video/sdfsdffd.mp4`.
+                      </div>
                       <div className="space-y-2">
                         {(q.media ?? []).map((m, mi) => (
                           <div key={mi} className="flex flex-wrap gap-2 items-center bg-[#161b22] border border-gray-800 rounded-lg p-2">

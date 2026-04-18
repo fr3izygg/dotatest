@@ -12,6 +12,7 @@ const __dirname = path.dirname(__filename);
 // Для GitHub Pages в подпапке: VITE_BASE=/имя-репо/ npm run build (со слешем в конце)
 export default defineConfig({
   base: process.env.VITE_BASE ?? "/",
+  publicDir: "media",
   plugins: [react(), tailwindcss(), viteSingleFile()],
   resolve: {
     alias: {
