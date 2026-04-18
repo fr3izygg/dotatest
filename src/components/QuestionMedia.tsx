@@ -13,9 +13,11 @@ export function parseYoutubeVideoId(url: string): string | null {
 function normalizeLocalUrl(url: string): string {
   const u = url.trim();
   if (!u) return u;
-  // allow paths like vids/a.mp4 -> /vids/a.mp4
-  if (!/^https?:\/\//i.test(u) && !u.startsWith('/')) return `/${u}`;
-  return u;
+  if (/^https?:\/\//i.test(u)) return u;
+
+  const base = import.meta.env.BASE_URL ?? '/';
+  const normalizedPath = u.startsWith('/') ? u.slice(1) : u;
+  return `${base}${normalizedPath}`;
 }
 
 function OneVideo({ url, stopAtSeconds, limitPlayback }: { url: string; stopAtSeconds?: number; limitPlayback: boolean }) {
