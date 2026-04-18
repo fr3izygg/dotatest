@@ -250,7 +250,7 @@ export default function LobbyQuestionsEditor({ questions, onApply, onClose }: Pr
                         </button>
                       </div>
                       <div className="text-gray-500 text-[11px]">
-                        Для локального файла создайте папку `media/video/` в корне проекта и укажите путь типа `media/video/sdfsdffd.mp4`.
+                        Для локального файла создайте папку `media/video/` в корне проекта. В поле медиа достаточно указать `video/sdfsdffd.mp4` или `media/video/sdfsdffd.mp4`.
                       </div>
                       <div className="space-y-2">
                         {(q.media ?? []).map((m, mi) => (

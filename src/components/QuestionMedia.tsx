@@ -15,9 +15,13 @@ function normalizeLocalUrl(url: string): string {
   if (!u) return u;
   if (/^https?:\/\//i.test(u)) return u;
 
+  let normalizedPath = u;
+  if (normalizedPath.startsWith('/media/')) normalizedPath = normalizedPath.slice('/media'.length);
+  if (normalizedPath.startsWith('media/')) normalizedPath = normalizedPath.slice('media'.length);
+  if (!normalizedPath.startsWith('/')) normalizedPath = `/${normalizedPath}`;
+
   const base = import.meta.env.BASE_URL ?? '/';
-  const normalizedPath = u.startsWith('/') ? u.slice(1) : u;
-  return `${base}${normalizedPath}`;
+  return `${base.replace(/\/$/, '')}${normalizedPath}`;
 }
 
 function OneVideo({ url, stopAtSeconds, limitPlayback }: { url: string; stopAtSeconds?: number; limitPlayback: boolean }) {
