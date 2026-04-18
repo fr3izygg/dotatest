@@ -9,6 +9,7 @@ import {
   type Question,
 } from '../store/gameStore';
 import LobbyQuestionsEditor from './LobbyQuestionsEditor';
+import PresetManager from './PresetManager';
 import QuestionMedia from './QuestionMedia';
 
 interface Props {
@@ -252,10 +253,10 @@ export default function AdminPanel({ state, updateState, onLogout }: Props) {
   };
 
   const resetGame = () => {
-    if (!confirm('Сбросить игру полностью? Все данные будут удалены.')) return;
+    if (!confirm('Сбросить игру полностью? Все данные будут удалены, но вопросы останутся.')) return;
     updateState(prev => {
       const fresh = getInitialState();
-      return { ...fresh, gameEpoch: (prev.gameEpoch ?? 0) + 1 };
+      return { ...fresh, questions: prev.questions, gameEpoch: (prev.gameEpoch ?? 0) + 1 };
     });
   };
 
@@ -274,6 +275,7 @@ export default function AdminPanel({ state, updateState, onLogout }: Props) {
   const [showHistory, setShowHistory] = useState(false);
   const [showScores, setShowScores] = useState(false);
   const [showQuestionEditor, setShowQuestionEditor] = useState(false);
+  const [showPresetManager, setShowPresetManager] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#0d1117] flex flex-col overflow-hidden">
@@ -365,6 +367,13 @@ export default function AdminPanel({ state, updateState, onLogout }: Props) {
             <div>
               <h3 className="text-white font-bold text-lg mb-3">Лобби</h3>
               <div className="flex flex-wrap gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={() => setShowPresetManager(true)}
+                  className="bg-blue-700 hover:bg-blue-600 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all border border-blue-600/40"
+                >
+                  📚 Пресеты вопросов
+                </button>
                 <button
                   type="button"
                   onClick={() => setShowQuestionEditor(true)}
@@ -772,6 +781,14 @@ export default function AdminPanel({ state, updateState, onLogout }: Props) {
           questions={state.questions}
           onApply={qs => updateState(prev => ({ ...prev, questions: qs }))}
           onClose={() => setShowQuestionEditor(false)}
+        />
+      )}
+
+      {showPresetManager && (
+        <PresetManager
+          currentQuestions={state.questions}
+          onLoadPreset={qs => updateState(prev => ({ ...prev, questions: qs }))}
+          onClose={() => setShowPresetManager(false)}
         />
       )}
     </div>

@@ -41,6 +41,42 @@ using (true)
 with check (true);
 ```
 
+### 2a) Таблица для пресетов вопросов
+
+Для сохранения наборов вопросов (пресетов) выполни:
+
+```sql
+create table if not exists public.question_presets (
+  id text primary key,
+  name text not null,
+  questions jsonb not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- Включаем Realtime для таблицы
+alter publication supabase_realtime add table public.question_presets;
+
+-- Разрешаем чтение/запись без авторизации
+alter table public.question_presets enable row level security;
+
+create policy "presets read"
+on public.question_presets for select
+to anon
+using (true);
+
+create policy "presets write"
+on public.question_presets for insert
+to anon
+with check (true);
+
+create policy "presets update"
+on public.question_presets for update
+to anon
+using (true)
+with check (true);
+```
+
 ### 2b) Функция «не затирать сброс» (обязательно после первого деплоя с сетью)
 
 Иначе старая вкладка/телефон может снова записать **прошлое** состояние в `rooms` после нажатия **«Сброс»** у админа.

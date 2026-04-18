@@ -124,7 +124,7 @@ export default function LobbyQuestionsEditor({ questions, onApply, onClose }: Pr
           <div>
             <h2 className="text-white font-bold text-lg">Вопросы квиза</h2>
             <p className="text-gray-500 text-xs mt-1">
-              Редактирование только в лобби. Сохраняется в браузере вместе с игрой (localStorage) — после перезапуска набор останется.
+              Редактирование только в лобби. Изменения сохраняются в игре (localStorage или Supabase).
             </p>
           </div>
           <button type="button" onClick={onClose} className="text-gray-500 hover:text-white text-2xl leading-none px-2">
@@ -240,6 +240,15 @@ export default function LobbyQuestionsEditor({ questions, onApply, onClose }: Pr
                       <p className="text-gray-600 text-[11px] mt-0.5 mb-2">
                         Любое количество блоков: фото (URL картинки) и видео (YouTube или mp4/webm). Порядок = порядок показа у игроков.
                       </p>
+                      <div className="flex gap-2 mb-2">
+                        <button
+                          type="button"
+                          onClick={() => alert('Медиа файлы (изображения, видео) можно:\n\n1. Разместить на внешнем хостинге (Imgur, YouTube и т.д.) и вставить прямую ссылку.\n\n2. Загрузить на сервер в папку /media/ и использовать путь вида /media/filename.jpg или /media/video.mp4\n\nДля локальной разработки положите файлы в public/media/')}
+                          className="text-xs font-bold text-blue-400 hover:text-blue-300 underline"
+                        >
+                          ? Где взять медиа
+                        </button>
+                      </div>
                       <div className="space-y-2">
                         {(q.media ?? []).map((m, mi) => (
                           <div key={mi} className="flex flex-wrap gap-2 items-center bg-[#161b22] border border-gray-800 rounded-lg p-2">
