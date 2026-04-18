@@ -1,4 +1,5 @@
 import { Player, GameState } from '../store/gameStore';
+import { useState, useEffect, useRef } from 'react';
 
 interface Props {
   state: GameState;
@@ -7,15 +8,91 @@ interface Props {
 
 export default function LobbyScreen({ state, currentPlayer }: Props) {
   const sorted = [...state.players].sort((a, b) => a.joinedAt - b.joinedAt);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [analyserNodes, setAnalyserNodes] = useState<AnalyserNode[]>([]);
+  const [frequencyData, setFrequencyData] = useState<Uint8Array[]>([]);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([null, null, null]);
+  const animationRef = useRef<number | null>(null);
+
+  const videos = [
+    'IMG_3305.MP4',
+    'IMG_3302.MP4',
+    'IMG_3299.MP4',
+  ];
+
+  useEffect(() => {
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, []);
+
+  const initAudio = (videoIndex: number) => {
+    const video = videoRefs.current[videoIndex];
+    if (!video || audioContext === null) return;
+
+    try {
+      const source = audioContext.createMediaElementAudioSource(video);
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+      analyser.connect(audioContext.destination);
+
+      const newAnalysers = [...analyserNodes];
+      newAnalysers[videoIndex] = analyser;
+      setAnalyserNodes(newAnalysers);
+
+      const newFreqData = [...frequencyData];
+      newFreqData[videoIndex] = new Uint8Array(analyser.frequencyBinCount);
+      setFrequencyData(newFreqData);
+    } catch (e) {
+      console.log('Audio init skipped (autoplay policy)', e);
+    }
+  };
+
+  const startAudioVisualization = () => {
+    if (audioContext === null) {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      setAudioContext(ctx);
+      return;
+    }
+
+    if (analyserNodes.length === 0) {
+      videos.forEach((_, i) => initAudio(i));
+    }
+
+    const animate = () => {
+      if (analyserNodes.length > 0) {
+        const newFreqData = [...frequencyData];
+        analyserNodes.forEach((analyser, i) => {
+          if (analyser) {
+            const data = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(data);
+            newFreqData[i] = data;
+          }
+        });
+        setFrequencyData(newFreqData);
+      }
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+  };
+
+  const handleVideoPlay = (index: number) => {
+    startAudioVisualization();
+    initAudio(index);
+  };
 
   return (
-    <div className="min-h-screen bg-[#0d1117] flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0d1117] flex flex-col p-4 relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-32 -left-32 w-96 h-96 bg-red-900/20 rounded-full blur-3xl" />
         <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-orange-900/20 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 w-full max-w-lg">
+      <div className="relative z-10 w-full max-w-lg mx-auto">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-red-600 to-orange-500 shadow-2xl shadow-red-900/50 mb-4">
             <span className="text-3xl">🎮</span>
@@ -80,6 +157,55 @@ export default function LobbyScreen({ state, currentPlayer }: Props) {
         <p className="text-center text-xs text-gray-700 mt-4">
           Вопросов в игре: {state.questions.length} · Таймер не ограничен
         </p>
+
+        {/* Audio Test Section */}
+        <div className="mt-6 bg-[#161b22] border border-gray-800 rounded-2xl p-6 shadow-2xl">
+          <h3 className="text-white font-bold text-lg mb-4">🔊 Тест звука</h3>
+          <p className="text-gray-400 text-sm mb-4">Нажми на видео и проверь звук в наушниках</p>
+
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            {videos.map((videoFile, idx) => (
+              <div key={idx} className="relative group">
+                <video
+                  ref={el => videoRefs.current[idx] = el}
+                  src={`/media/${videoFile}`}
+                  controls
+                  className="w-full h-32 rounded-lg bg-black border border-gray-700 group-hover:border-red-600/50 transition-all"
+                  onPlay={() => handleVideoPlay(idx)}
+                  crossOrigin="anonymous"
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Equalizer Visualization */}
+          <div className="mt-4 p-4 bg-[#0d1117] rounded-lg border border-gray-800">
+            <p className="text-gray-500 text-xs mb-3 font-bold uppercase">Визуализация</p>
+            <div className="grid grid-cols-3 gap-4">
+              {[0, 1, 2].map((videoIdx) => (
+                <div key={videoIdx} className="flex flex-col-reverse items-center gap-1 h-24">
+                  {frequencyData[videoIdx] &&
+                    Array.from({ length: 12 }).map((_, barIdx) => {
+                      const dataIndex = Math.floor(
+                        (barIdx / 12) * frequencyData[videoIdx].length
+                      );
+                      const height = frequencyData[videoIdx][dataIndex] || 0;
+                      return (
+                        <div
+                          key={barIdx}
+                          className="w-2 rounded-full bg-gradient-to-t from-red-600 to-orange-400 transition-all"
+                          style={{
+                            height: `${(height / 255) * 100}%`,
+                            minHeight: '2px',
+                          }}
+                        />
+                      );
+                    })}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
