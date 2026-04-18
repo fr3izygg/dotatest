@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { GameState, Player } from '../store/gameStore';
+import QuestionMedia from './QuestionMedia';
 
 interface Props {
   state: GameState;
@@ -111,6 +112,12 @@ export default function BreakScreen({ state, currentPlayer }: Props) {
             <p className="text-gray-400 text-sm mt-1">Загружаем следующий вопрос...</p>
           )}
         </div>
+
+        {question?.breakMedia?.length ? (
+          <div className="rounded-3xl overflow-hidden border border-gray-800 bg-[#161b22] shadow-2xl">
+            <QuestionMedia items={question.breakMedia} autoPlay limitPlayback={false} muted={false} />
+          </div>
+        ) : null}
 
         {myRank > 0 && (
           <div className="bg-gradient-to-r from-red-900/40 to-orange-900/40 border border-red-700/40 rounded-xl p-3 flex items-center justify-between">
