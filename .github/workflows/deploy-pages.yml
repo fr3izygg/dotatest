@@ -36,6 +36,8 @@ jobs:
         env:
           # Путь к сайту: https://USER.github.io/REPO/ — Vite должен знать base=/REPO/
           VITE_BASE: /${{ github.event.repository.name }}/
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: npm run build
 
       - name: Upload Pages artifact

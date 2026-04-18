@@ -5,11 +5,13 @@ interface Props {
   state: GameState;
   onJoin: (player: Player) => void;
   onAdminLogin: () => void;
+  roomId: string;
+  onRoomIdChange: (next: string) => void;
 }
 
 const ADMIN_PASSWORD = 'gigantic536wall';
 
-export default function LoginScreen({ state, onJoin, onAdminLogin }: Props) {
+export default function LoginScreen({ state, onJoin, onAdminLogin, roomId, onRoomIdChange }: Props) {
   const [nick, setNick] = useState('');
   const [adminMode, setAdminMode] = useState(false);
   const [adminPass, setAdminPass] = useState('');
@@ -78,6 +80,19 @@ export default function LoginScreen({ state, onJoin, onAdminLogin }: Props) {
 
             <div className="space-y-4">
               <div>
+                <label className="block text-sm text-gray-400 mb-1.5">Код комнаты</label>
+                <input
+                  className="w-full bg-[#0d1117] border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/40 transition-all"
+                  placeholder="например: main"
+                  value={roomId}
+                  onChange={e => onRoomIdChange(e.target.value.replace(/\s+/g, ''))}
+                  maxLength={24}
+                />
+                <p className="text-gray-600 text-xs mt-1.5">
+                  Чтобы все видели одну игру, у всех должен быть одинаковый код.
+                </p>
+              </div>
+              <div>
                 <label className="block text-sm text-gray-400 mb-1.5">Твой игровой ник</label>
                 <input
                   className="w-full bg-[#0d1117] border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/50 transition-all"
@@ -128,6 +143,16 @@ export default function LoginScreen({ state, onJoin, onAdminLogin }: Props) {
             <p className="text-xs text-gray-500 mb-4">Только для организатора игры</p>
 
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-1.5">Код комнаты</label>
+                <input
+                  className="w-full bg-[#0d1117] border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/40 transition-all"
+                  placeholder="например: main"
+                  value={roomId}
+                  onChange={e => onRoomIdChange(e.target.value.replace(/\s+/g, ''))}
+                  maxLength={24}
+                />
+              </div>
               <div>
                 <label className="block text-sm text-gray-400 mb-1.5">Пароль администратора</label>
                 <input

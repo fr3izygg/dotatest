@@ -13,7 +13,8 @@ type AppMode = 'login' | 'player' | 'admin';
 const BREAK_DURATION = 8000; // 8 seconds
 
 export default function App() {
-  const { state, updateState } = useGameState();
+  const [roomId, setRoomId] = useState(() => localStorage.getItem('dota2quiz_room') ?? 'main');
+  const { state, updateState } = useGameState(roomId);
   const [mode, setMode] = useState<AppMode>('login');
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
 
@@ -102,13 +103,31 @@ export default function App() {
         state={state}
         onJoin={handleJoin}
         onAdminLogin={handleAdminLogin}
+        roomId={roomId}
+        onRoomIdChange={(next) => {
+          const trimmed = next.trim() || 'main';
+          setRoomId(trimmed);
+          localStorage.setItem('dota2quiz_room', trimmed);
+        }}
       />
     );
   }
 
   // PLAYER MODE
   if (!currentPlayer) {
-    return <LoginScreen state={state} onJoin={handleJoin} onAdminLogin={handleAdminLogin} />;
+    return (
+      <LoginScreen
+        state={state}
+        onJoin={handleJoin}
+        onAdminLogin={handleAdminLogin}
+        roomId={roomId}
+        onRoomIdChange={(next) => {
+          const trimmed = next.trim() || 'main';
+          setRoomId(trimmed);
+          localStorage.setItem('dota2quiz_room', trimmed);
+        }}
+      />
+    );
   }
 
   // Sync currentPlayer score from state
