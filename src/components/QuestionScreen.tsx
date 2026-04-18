@@ -113,6 +113,8 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
 
   const choiceList = (question.choices ?? []).map(c => c.trim()).filter(Boolean);
 
+  const limitPlayback = state.phase === 'question' || state.phase === 'paused';
+
   return (
     <div className="min-h-screen bg-[#0d1117] flex flex-col p-4 relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -141,7 +143,9 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
       </div>
 
       {/* Question card */}
-      <div className="relative z-10 flex-1 flex flex-col max-w-2xl mx-auto w-full">
+      <div className="relative z-10 flex-1 w-full max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <div className="lg:col-span-7 flex flex-col">
         {/* Meta */}
         <div className="flex items-center gap-3 mb-4 flex-wrap">
           <span className="text-gray-500 text-sm font-medium">
@@ -159,14 +163,75 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
           )}
         </div>
 
-        {/* Question text */}
-        <div className="bg-[#161b22] border border-gray-800 rounded-2xl p-6 mb-4 shadow-xl">
-          <QuestionMedia items={getQuestionMediaItems(question)} />
-          <p className="text-white text-lg font-medium leading-relaxed">{question.text}</p>
-        </div>
+            {/* Question text */}
+            <div className="bg-[#161b22] border border-gray-800 rounded-2xl p-6 mb-4 shadow-xl">
+              <QuestionMedia items={getQuestionMediaItems(question)} limitPlayback={limitPlayback} />
+              <p className="text-white text-lg font-medium leading-relaxed">{question.text}</p>
+            </div>
 
-        {/* Answer section */}
-        <div className="bg-[#161b22] border border-gray-800 rounded-2xl p-5 shadow-xl">
+            {/* Progress + таблица счёта */}
+            <div className="mt-4 bg-[#161b22] border border-gray-800 rounded-xl px-4 py-3">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-gray-500 text-sm">Ответили</span>
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1">
+                    {state.players.map(p => {
+                      const answered = state.answers.find(a => a.playerId === p.id);
+                      return (
+                        <div
+                          key={p.id}
+                          className={`w-2 h-2 rounded-full transition-all ${answered ? 'bg-green-400' : 'bg-gray-700'}`}
+                          title={p.name}
+                        />
+                      );
+                    })}
+                  </div>
+                  <span className="text-white font-bold text-sm">
+                    {answeredCount}/{totalPlayers}
+                  </span>
+                </div>
+              </div>
+              <div className="border-t border-gray-800 pt-3">
+                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">Таблица счёта</p>
+                <div className="rounded-lg border border-gray-800 overflow-hidden max-h-48 overflow-y-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-[#0d1117] text-gray-500 text-left">
+                        <th className="px-2 py-1.5 w-8">#</th>
+                        <th className="px-2 py-1.5">Игрок</th>
+                        <th className="px-2 py-1.5 text-right">Очки</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sortedByScore.map((p, idx) => {
+                        const isMe = p.id === currentPlayer.id;
+                        return (
+                          <tr
+                            key={p.id}
+                            className={`border-t border-gray-800/80 ${isMe ? 'bg-red-900/15' : ''}`}
+                          >
+                            <td className="px-2 py-1.5 text-gray-500 tabular-nums">{idx + 1}</td>
+                            <td className={`px-2 py-1.5 truncate max-w-[180px] ${isMe ? 'text-red-300 font-medium' : 'text-gray-300'}`}>
+                              {p.name}
+                              {isMe && <span className="text-red-500/80 text-[10px] ml-1">(ты)</span>}
+                            </td>
+                            <td className="px-2 py-1.5 text-right text-yellow-400 font-bold tabular-nums">{p.score}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  {sortedByScore.length === 0 && (
+                    <p className="text-gray-600 text-xs px-2 py-3 text-center">Пока нет игроков</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-5 flex flex-col">
+            {/* Answer section */}
+            <div className="bg-[#161b22] border border-gray-800 rounded-2xl p-5 shadow-xl">
           {state.phase === 'paused' && !submitted && (
             <div className="flex items-center gap-2 mb-3 text-yellow-400 text-sm">
               <span>⏸</span>
@@ -259,63 +324,6 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
               )}
             </div>
           )}
-        </div>
-
-        {/* Progress + таблица счёта */}
-        <div className="mt-4 bg-[#161b22] border border-gray-800 rounded-xl px-4 py-3">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-gray-500 text-sm">Ответили</span>
-            <div className="flex items-center gap-2">
-              <div className="flex gap-1">
-                {state.players.map(p => {
-                  const answered = state.answers.find(a => a.playerId === p.id);
-                  return (
-                    <div
-                      key={p.id}
-                      className={`w-2 h-2 rounded-full transition-all ${answered ? 'bg-green-400' : 'bg-gray-700'}`}
-                      title={p.name}
-                    />
-                  );
-                })}
-              </div>
-              <span className="text-white font-bold text-sm">
-                {answeredCount}/{totalPlayers}
-              </span>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 pt-3">
-            <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">Таблица счёта</p>
-            <div className="rounded-lg border border-gray-800 overflow-hidden max-h-48 overflow-y-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-[#0d1117] text-gray-500 text-left">
-                    <th className="px-2 py-1.5 w-8">#</th>
-                    <th className="px-2 py-1.5">Игрок</th>
-                    <th className="px-2 py-1.5 text-right">Очки</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedByScore.map((p, idx) => {
-                    const isMe = p.id === currentPlayer.id;
-                    return (
-                      <tr
-                        key={p.id}
-                        className={`border-t border-gray-800/80 ${isMe ? 'bg-red-900/15' : ''}`}
-                      >
-                        <td className="px-2 py-1.5 text-gray-500 tabular-nums">{idx + 1}</td>
-                        <td className={`px-2 py-1.5 truncate max-w-[140px] ${isMe ? 'text-red-300 font-medium' : 'text-gray-300'}`}>
-                          {p.name}
-                          {isMe && <span className="text-red-500/80 text-[10px] ml-1">(ты)</span>}
-                        </td>
-                        <td className="px-2 py-1.5 text-right text-yellow-400 font-bold tabular-nums">{p.score}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              {sortedByScore.length === 0 && (
-                <p className="text-gray-600 text-xs px-2 py-3 text-center">Пока нет игроков</p>
-              )}
             </div>
           </div>
         </div>

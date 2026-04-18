@@ -13,6 +13,11 @@ export type QuestionMediaKind = 'image' | 'video';
 export interface QuestionMediaItem {
   kind: QuestionMediaKind;
   url: string;
+  /**
+   * Для прямых видео (mp4/webm): во время раунда «Вопрос» видео остановится на этом таймкоде (секунды).
+   * На перерыве ограничение снимается и видео можно смотреть полностью.
+   */
+  stopAtSeconds?: number;
 }
 
 export interface Question {

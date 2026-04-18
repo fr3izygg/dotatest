@@ -262,9 +262,33 @@ export default function LobbyQuestionsEditor({ questions, onApply, onClose }: Pr
                                 next[mi] = { ...next[mi], url: e.target.value };
                                 patchAt(i, { media: next });
                               }}
-                              placeholder="https://..."
+                              placeholder="https://... или /vids/ролик.mp4"
                               className="flex-1 min-w-[160px] bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-1.5 text-white text-sm"
                             />
+                            {m.kind === 'video' && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-gray-600 text-xs">стоп (сек)</span>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  step={1}
+                                  value={m.stopAtSeconds ?? ''}
+                                  onChange={e => {
+                                    const v = e.target.value;
+                                    const next = [...(q.media ?? [])];
+                                    if (v === '') {
+                                      next[mi] = { ...next[mi], stopAtSeconds: undefined };
+                                    } else {
+                                      const n = Number(v);
+                                      next[mi] = { ...next[mi], stopAtSeconds: Number.isNaN(n) ? undefined : Math.max(0, n) };
+                                    }
+                                    patchAt(i, { media: next });
+                                  }}
+                                  className="w-24 bg-[#0d1117] border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs"
+                                  title="Во время вопроса видео остановится на этом таймкоде. На перерыве ограничение снимается."
+                                />
+                              </div>
+                            )}
                             <button
                               type="button"
                               onClick={() => {
