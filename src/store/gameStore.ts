@@ -145,6 +145,11 @@ export interface GameState {
   gameStartedAt: number;
   lastUpdated: number;
   adminSkipBreak: boolean;
+  /**
+   * Версия состояния (растёт при полном сбросе). Нужна, чтобы старые вкладки/устройства
+   * не затирали новое состояние в Supabase после «Сброс».
+   */
+  gameEpoch: number;
 }
 
 const STORAGE_KEY = 'dota2quiz_state';
@@ -159,11 +164,16 @@ function getChannel(): BroadcastChannel {
   return channel;
 }
 
+/** Старые сохранения без gameEpoch */
+export function withGameEpochDefaults(state: GameState): GameState {
+  return { ...state, gameEpoch: state.gameEpoch ?? 0 };
+}
+
 export function loadState(): GameState | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as GameState;
+    return withGameEpochDefaults(JSON.parse(raw) as GameState);
   } catch {
     return null;
   }
@@ -394,5 +404,6 @@ export function getInitialState(): GameState {
     gameStartedAt: 0,
     lastUpdated: Date.now(),
     adminSkipBreak: false,
+    gameEpoch: 0,
   };
 }

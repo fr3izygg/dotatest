@@ -3,7 +3,6 @@ import {
   GameState,
   PlayerAnswer,
   getInitialState,
-  saveState,
   getQuestionPoints,
   getQuestionMediaItems,
   applyPendingPointsForQuestion,
@@ -254,9 +253,10 @@ export default function AdminPanel({ state, updateState, onLogout }: Props) {
 
   const resetGame = () => {
     if (!confirm('Сбросить игру полностью? Все данные будут удалены.')) return;
-    const fresh = getInitialState();
-    saveState(fresh);
-    updateState(() => fresh);
+    updateState(prev => {
+      const fresh = getInitialState();
+      return { ...fresh, gameEpoch: (prev.gameEpoch ?? 0) + 1 };
+    });
   };
 
   const finishGame = () => {

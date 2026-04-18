@@ -41,6 +41,42 @@ using (true)
 with check (true);
 ```
 
+### 2b) Функция «не затирать сброс» (обязательно после первого деплоя с сетью)
+
+Иначе старая вкладка/телефон может снова записать **прошлое** состояние в `rooms` после нажатия **«Сброс»** у админа.
+
+В **SQL Editor** выполни:
+
+```sql
+create or replace function public.upsert_room_state(p_id text, p_state jsonb)
+returns void
+language plpgsql
+security invoker
+set search_path = public
+as $$
+begin
+  insert into public.rooms (id, state, updated_at)
+  values (p_id, p_state, now())
+  on conflict (id) do update set
+    state = case
+      when coalesce((public.rooms.state->>'gameEpoch')::bigint, 0)
+           <= coalesce((excluded.state->>'gameEpoch')::bigint, 0)
+      then excluded.state
+      else public.rooms.state
+    end,
+    updated_at = case
+      when coalesce((public.rooms.state->>'gameEpoch')::bigint, 0)
+           <= coalesce((excluded.state->>'gameEpoch')::bigint, 0)
+      then now()
+      else public.rooms.updated_at
+    end;
+end;
+$$;
+
+grant execute on function public.upsert_room_state(text, jsonb) to anon;
+grant execute on function public.upsert_room_state(text, jsonb) to authenticated;
+```
+
 ## 3) Вписать ключи в GitHub Secrets
 
 В Supabase: **Project Settings → API**:
