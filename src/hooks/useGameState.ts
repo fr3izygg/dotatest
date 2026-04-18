@@ -27,9 +27,15 @@ export function useGameState(roomId: string) {
   });
 
   const roomIdRef = useRef(roomId);
+  const lastAppliedRef = useRef<number>(state.lastUpdated);
+
   useEffect(() => {
     roomIdRef.current = roomId;
   }, [roomId]);
+
+  useEffect(() => {
+    lastAppliedRef.current = state.lastUpdated;
+  }, [state.lastUpdated]);
 
   useEffect(() => {
     // При смене комнаты — загрузить актуальное
@@ -39,13 +45,15 @@ export function useGameState(roomId: string) {
     // Poll localStorage every 300ms as fallback (для режима без Supabase)
     const interval = setInterval(() => {
       const s = loadRoomStateFromLocal(roomId);
-      if (s && s.lastUpdated !== state.lastUpdated) {
+      if (s && s.lastUpdated !== lastAppliedRef.current) {
+        lastAppliedRef.current = s.lastUpdated;
         setState(s);
       }
     }, 300);
 
     const unsubLocal = subscribeToState((s) => {
       // старый канал между вкладками одной машины
+      lastAppliedRef.current = s.lastUpdated;
       setState(s);
     });
 
@@ -56,9 +64,14 @@ export function useGameState(roomId: string) {
     const bootstrapSupabase = async () => {
       if (!supabase) return;
 
-      const { data } = await supabase.from('rooms').select('state').eq('id', roomId).maybeSingle();
+      const { data, error } = await supabase.from('rooms').select('state').eq('id', roomId).maybeSingle();
+      if (error) {
+        console.error('[supabase] rooms select error', error);
+        return;
+      }
       const next = data?.state as GameState | undefined;
       if (!cancelled && next) {
+        lastAppliedRef.current = next.lastUpdated;
         setState(next);
         saveRoomStateToLocal(roomId, next);
       }
@@ -72,11 +85,16 @@ export function useGameState(roomId: string) {
             const row = (payload.new as any) || (payload.old as any);
             const st = row?.state as GameState | undefined;
             if (!st) return;
+            lastAppliedRef.current = st.lastUpdated;
             setState(st);
             saveRoomStateToLocal(roomId, st);
           }
         )
-        .subscribe();
+        .subscribe((status, err) => {
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            console.error('[supabase] realtime channel', status, err);
+          }
+        });
     };
 
     bootstrapSupabase();
@@ -87,7 +105,7 @@ export function useGameState(roomId: string) {
       unsubLocal();
       if (channel) supabase?.removeChannel(channel);
     };
-  }, [roomId, state.lastUpdated]);
+  }, [roomId]);
 
   const updateState = useCallback((updater: (prev: GameState) => GameState) => {
     setState(prev => {
@@ -100,7 +118,10 @@ export function useGameState(roomId: string) {
       if (supabase) {
         void supabase
           .from('rooms')
-          .upsert({ id: roomIdRef.current, state: next, updated_at: new Date().toISOString() });
+          .upsert({ id: roomIdRef.current, state: next, updated_at: new Date().toISOString() })
+          .then(({ error }) => {
+            if (error) console.error('[supabase] rooms upsert error', error);
+          });
       }
       return next;
     });
