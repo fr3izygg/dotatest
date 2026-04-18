@@ -104,11 +104,13 @@ export default function LobbyQuestionsEditor({ questions, onApply, onClose }: Pr
     const cleaned = draft.map((q, idx) => {
       const n = normalizeQuestion(q);
       const media = (n.media || []).filter(m => m.url.trim());
+      const breakMedia = (n.breakMedia || []).filter(m => m.url.trim());
       return {
         ...n,
         text: n.text.trim() || `Вопрос ${idx + 1}`,
         correctAnswer: n.correctAnswer.trim(),
         media: media.length > 0 ? media : undefined,
+        breakMedia: breakMedia.length > 0 ? breakMedia : undefined,
         imageUrl: media.length > 0 ? undefined : n.imageUrl?.trim() || undefined,
         videoUrl: media.length > 0 ? undefined : n.videoUrl?.trim() || undefined,
       };
@@ -332,6 +334,61 @@ export default function LobbyQuestionsEditor({ questions, onApply, onClose }: Pr
                         <QuestionMedia items={(q.media ?? []).filter(m => m.url.trim())} />
                       </div>
                     )}
+                    <div>
+                      <span className="text-gray-500 text-xs font-bold uppercase tracking-wide">Медиа на паузе</span>
+                      <p className="text-gray-600 text-[11px] mt-0.5 mb-2">
+                        Фото/видео, показываемое во время паузы после вопроса (продолжение или другое).
+                      </p>
+                      <div className="space-y-2">
+                        {(q.breakMedia ?? []).map((m, mi) => (
+                          <div key={mi} className="flex flex-wrap gap-2 items-center bg-[#161b22] border border-gray-800 rounded-lg p-2">
+                            <select
+                              value={m.kind}
+                              onChange={e => {
+                                const next = [...(q.breakMedia ?? [])];
+                                next[mi] = { ...next[mi], kind: e.target.value as QuestionMediaItem['kind'] };
+                                patchAt(i, { breakMedia: next });
+                              }}
+                              className="bg-[#0d1117] border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs"
+                            >
+                              <option value="image">Фото</option>
+                              <option value="video">Видео</option>
+                            </select>
+                            <input
+                              value={m.url}
+                              onChange={e => {
+                                const next = [...(q.breakMedia ?? [])];
+                                next[mi] = { ...next[mi], url: e.target.value };
+                                patchAt(i, { breakMedia: next });
+                              }}
+                              placeholder="https://... или /media/image.jpg"
+                              className="flex-1 min-w-[160px] bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-1.5 text-white text-sm"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = (q.breakMedia ?? []).filter((_, j) => j !== mi);
+                                patchAt(i, { breakMedia: next.length > 0 ? next : undefined });
+                              }}
+                              className="text-red-400 hover:text-red-300 text-xs font-bold px-2"
+                            >
+                              Удалить
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            patchAt(i, {
+                              breakMedia: [...(q.breakMedia ?? []), { kind: 'image', url: '' }],
+                            })
+                          }
+                          className="text-xs font-bold text-purple-400 hover:text-purple-300"
+                        >
+                          + Добавить фото или видео на паузе
+                        </button>
+                      </div>
+                    </div>
                     <fieldset className="space-y-2">
                       <legend className="text-gray-500 text-xs">Тип ответа</legend>
                       <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">

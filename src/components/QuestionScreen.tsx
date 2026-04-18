@@ -31,6 +31,8 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
   const inputRef = useRef<HTMLInputElement>(null);
   const prevQuestionIndex = useRef(state.currentQuestionIndex);
 
+  const [timeLeft, setTimeLeft] = useState(20);
+
   const isChoice = question?.responseMode === 'choice' && (question.choices?.filter(c => c.trim()).length ?? 0) > 0;
 
   // Reset when question changes
@@ -40,9 +42,19 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
       setSavedAnswer('');
       setSubmitted(false);
       setIsEditingAnswer(false);
+      setTimeLeft(20);
       prevQuestionIndex.current = state.currentQuestionIndex;
     }
   }, [state.currentQuestionIndex]);
+
+  // Timer for question
+  useEffect(() => {
+    if (state.phase !== 'question' || timeLeft <= 0) return;
+    const timer = setInterval(() => {
+      setTimeLeft(prev => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [state.phase, timeLeft]);
 
   // Focus input
   useEffect(() => {
@@ -118,7 +130,8 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
   const choiceList = (question.choices ?? []).map(c => c.trim()).filter(Boolean);
 
   const limitPlayback = state.phase === 'question';
-  const autoPlay = state.phase === 'question';
+  const autoPlay = state.phase === 'question' || state.phase === 'break';
+  const muted = false;
 
   return (
     <div className="min-h-screen bg-[#0d1117] flex flex-col p-4 relative overflow-hidden">
@@ -133,6 +146,11 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
           <div className="text-2xl font-black text-white">
             DOTA <span className="text-red-500">QUIZ</span>
           </div>
+          {state.phase === 'question' && (
+            <div className="bg-red-600/20 border border-red-600/40 text-red-400 text-sm font-bold px-3 py-1 rounded-full">
+              ⏱ {timeLeft}s
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <div className="bg-[#161b22] border border-gray-800 rounded-xl px-3 py-1.5 flex items-center gap-2">
@@ -170,8 +188,17 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
 
             {/* Question text */}
             <div className="bg-[#161b22] border border-gray-800 rounded-2xl p-6 mb-4 shadow-xl">
-              <QuestionMedia items={getQuestionMediaItems(question)} limitPlayback={limitPlayback} autoPlay={autoPlay} />
-              <p className="text-white text-lg font-medium leading-relaxed">{question.text}</p>
+              {state.phase === 'break' ? (
+                <>
+                  <QuestionMedia items={question.breakMedia || []} limitPlayback={false} autoPlay={autoPlay} muted={muted} />
+                  <p className="text-white text-lg font-medium leading-relaxed text-center">Перерыв между вопросами...</p>
+                </>
+              ) : (
+                <>
+                  <QuestionMedia items={getQuestionMediaItems(question)} limitPlayback={limitPlayback} autoPlay={autoPlay} muted={muted} />
+                  <p className="text-white text-lg font-medium leading-relaxed">{question.text}</p>
+                </>
+              )}
             </div>
 
             {/* Progress + таблица счёта */}

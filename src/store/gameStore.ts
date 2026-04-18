@@ -40,6 +40,8 @@ export interface Question {
   responseMode?: QuestionResponseMode;
   /** Варианты для режима теста (показываются игроку) */
   choices?: string[];
+  /** Медиа, показываемое во время паузы после вопроса */
+  breakMedia?: QuestionMediaItem[];
 }
 
 const DEFAULT_POINTS_BY_DIFFICULTY: Record<Difficulty, number> = {

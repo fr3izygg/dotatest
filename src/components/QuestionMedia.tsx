@@ -36,7 +36,7 @@ function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay }: { url: string
     const params = new URLSearchParams({
       autoplay: autoPlay ? '1' : '0',
       mute: '1', // Required for autoplay
-      controls: '1',
+      controls: '0',
       modestbranding: '1',
       rel: '0',
       showinfo: '0',
@@ -76,9 +76,8 @@ function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay }: { url: string
         <video
           ref={ref}
           src={normalized}
-          controls
           autoPlay={autoPlay}
-          muted={autoPlay} // Required for autoplay
+          muted={muted}
           preload="metadata"
           className="w-full max-h-72"
           playsInline
@@ -103,11 +102,15 @@ function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay }: { url: string
 interface Props {
   items: QuestionMediaItem[];
   /** Если true: во время раунда ограничиваем видео по stopAtSeconds */
-  limitPlayback?: boolean;  /** Если true: видео автостартует */
-  autoPlay?: boolean;  className?: string;
+  limitPlayback?: boolean;
+  /** Если true: видео автостартует */
+  autoPlay?: boolean;
+  /** Если true: видео без звука */
+  muted?: boolean;
+  className?: string;
 }
 
-export default function QuestionMedia({ items, limitPlayback = false, autoPlay = false, className = '' }: Props) {
+export default function QuestionMedia({ items, limitPlayback = false, autoPlay = false, muted = false, className = '' }: Props) {
   const list = useMemo(() => items.filter(m => m.url?.trim()), [items]);
 
   if (list.length === 0) return null;
