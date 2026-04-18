@@ -24,7 +24,7 @@ function normalizeLocalUrl(url: string): string {
   return `${base.replace(/\/$/, '')}${normalizedPath}`;
 }
 
-function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay }: { url: string; stopAtSeconds?: number; limitPlayback: boolean; autoPlay?: boolean }) {
+function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay, muted }: { url: string; stopAtSeconds?: number; limitPlayback: boolean; autoPlay?: boolean; muted?: boolean }) {
   const yt = parseYoutubeVideoId(url);
   const normalized = normalizeLocalUrl(url);
   const isDirect = /\.(mp4|webm|ogg)(\?.*)?$/i.test(normalized);
@@ -34,8 +34,8 @@ function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay }: { url: string
     const isShort = url.includes('shorts');
     const aspectClass = isShort ? 'aspect-square' : 'aspect-video';
     const params = new URLSearchParams({
-      autoplay: autoPlay ? '1' : '0',
-      mute: '1', // Required for autoplay
+      autoplay: (autoPlay && muted) ? '1' : '0', // Autoplay only if muted
+      mute: muted ? '1' : '0',
       controls: '0',
       modestbranding: '1',
       rel: '0',
@@ -134,7 +134,7 @@ export default function QuestionMedia({ items, limitPlayback = false, autoPlay =
         // Видео на больших экранах занимает всю ширину сетки
         return (
           <div key={key} className="lg:col-span-2">
-            <OneVideo url={m.url} stopAtSeconds={m.stopAtSeconds} limitPlayback={limitPlayback} autoPlay={autoPlay} />
+            <OneVideo url={m.url} stopAtSeconds={m.stopAtSeconds} limitPlayback={limitPlayback} autoPlay={autoPlay} muted={muted} />
           </div>
         );
       })}
