@@ -24,18 +24,28 @@ function normalizeLocalUrl(url: string): string {
   return `${base.replace(/\/$/, '')}${normalizedPath}`;
 }
 
-function OneVideo({ url, stopAtSeconds, limitPlayback }: { url: string; stopAtSeconds?: number; limitPlayback: boolean }) {
+function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay }: { url: string; stopAtSeconds?: number; limitPlayback: boolean; autoPlay?: boolean }) {
   const yt = parseYoutubeVideoId(url);
   const normalized = normalizeLocalUrl(url);
   const isDirect = /\.(mp4|webm|ogg)(\?.*)?$/i.test(normalized);
   const ref = useRef<HTMLVideoElement | null>(null);
 
   if (yt) {
+    const isShort = url.includes('shorts');
+    const aspectClass = isShort ? 'aspect-square' : 'aspect-video';
+    const params = new URLSearchParams({
+      autoplay: autoPlay ? '1' : '0',
+      mute: '1', // Required for autoplay
+      controls: '1',
+      modestbranding: '1',
+      rel: '0',
+      showinfo: '0',
+    });
     return (
-      <div className="rounded-xl overflow-hidden border border-gray-800 aspect-video bg-black">
+      <div className={`rounded-xl overflow-hidden border border-gray-800 ${aspectClass} bg-black`}>
         <iframe
           title="Видео к вопросу"
-          src={`https://www.youtube.com/embed/${yt}`}
+          src={`https://www.youtube.com/embed/${yt}?${params.toString()}`}
           className="w-full h-full"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
@@ -62,7 +72,16 @@ function OneVideo({ url, stopAtSeconds, limitPlayback }: { url: string; stopAtSe
   if (isDirect) {
     return (
       <div className="rounded-xl overflow-hidden border border-gray-800 bg-black">
-        <video ref={ref} src={normalized} controls className="w-full max-h-72" playsInline>
+        <video
+          ref={ref}
+          src={normalized}
+          controls
+          autoPlay={autoPlay}
+          muted={autoPlay} // Required for autoplay
+          preload="metadata"
+          className="w-full max-h-72"
+          playsInline
+        >
           Видео не поддерживается
         </video>
       </div>
@@ -83,11 +102,11 @@ function OneVideo({ url, stopAtSeconds, limitPlayback }: { url: string; stopAtSe
 interface Props {
   items: QuestionMediaItem[];
   /** Если true: во время раунда ограничиваем видео по stopAtSeconds */
-  limitPlayback?: boolean;
-  className?: string;
+  limitPlayback?: boolean;  /** Если true: видео автостартует */
+  autoPlay?: boolean;  className?: string;
 }
 
-export default function QuestionMedia({ items, limitPlayback = false, className = '' }: Props) {
+export default function QuestionMedia({ items, limitPlayback = false, autoPlay = false, className = '' }: Props) {
   const list = useMemo(() => items.filter(m => m.url?.trim()), [items]);
 
   if (list.length === 0) return null;
@@ -111,7 +130,7 @@ export default function QuestionMedia({ items, limitPlayback = false, className 
         // Видео на больших экранах занимает всю ширину сетки
         return (
           <div key={key} className="lg:col-span-2">
-            <OneVideo url={m.url} stopAtSeconds={m.stopAtSeconds} limitPlayback={limitPlayback} />
+            <OneVideo url={m.url} stopAtSeconds={m.stopAtSeconds} limitPlayback={limitPlayback} autoPlay={autoPlay} />
           </div>
         );
       })}

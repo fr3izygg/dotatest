@@ -93,6 +93,42 @@ export default function AdminPanel({ state, updateState, onLogout }: Props) {
 
   useEffect(() => () => clearPendingTimers(), [clearPendingTimers]);
 
+  // Автоматическая пауза через 2 секунды после ответа всех игроков
+  useEffect(() => {
+    if (state.phase !== 'question') return;
+    if (state.answers.length < state.players.length) return; // Не все ответили
+
+    const timer = setTimeout(() => {
+      updateState(prev => {
+        if (prev.phase !== 'question') return prev; // Проверка на случай изменения фазы
+
+        const q = prev.questions[prev.currentQuestionIndex];
+        let breakDuration = 8000; // Дефолт 8 секунд
+
+        if (q) {
+          const media = getQuestionMediaItems(q);
+          const video = media.find(m => m.kind === 'video');
+          if (video && video.stopAtSeconds) {
+            // Предполагаем длительность видео 60 секунд, если не указано
+            const assumedTotal = 60; // Можно улучшить, но пока так
+            const remaining = Math.max(0, assumedTotal - video.stopAtSeconds);
+            breakDuration = (remaining + 10) * 1000; // Оставшееся + 10 секунд
+          }
+        }
+
+        return {
+          ...prev,
+          phase: 'break',
+          breakStartedAt: Date.now(),
+          breakDuration,
+          adminSkipBreak: false,
+        };
+      });
+    }, 2000); // 2 секунды
+
+    return () => clearTimeout(timer);
+  }, [state.phase, state.answers.length, state.players.length, state.currentQuestionIndex, updateState]);
+
   const commitAnswerCheck = useCallback(
     (playerId: string, isCorrect: boolean) => {
       updateState(prev => {

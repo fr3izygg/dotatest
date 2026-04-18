@@ -113,7 +113,8 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
 
   const choiceList = (question.choices ?? []).map(c => c.trim()).filter(Boolean);
 
-  const limitPlayback = state.phase === 'question' || state.phase === 'paused';
+  const limitPlayback = state.phase === 'question';
+  const autoPlay = state.phase === 'question';
 
   return (
     <div className="min-h-screen bg-[#0d1117] flex flex-col p-4 relative overflow-hidden">
@@ -165,7 +166,7 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
 
             {/* Question text */}
             <div className="bg-[#161b22] border border-gray-800 rounded-2xl p-6 mb-4 shadow-xl">
-              <QuestionMedia items={getQuestionMediaItems(question)} limitPlayback={limitPlayback} />
+              <QuestionMedia items={getQuestionMediaItems(question)} limitPlayback={limitPlayback} autoPlay={autoPlay} />
               <p className="text-white text-lg font-medium leading-relaxed">{question.text}</p>
             </div>
 
