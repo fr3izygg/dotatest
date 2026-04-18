@@ -93,10 +93,11 @@ export default function AdminPanel({ state, updateState, onLogout }: Props) {
 
   useEffect(() => () => clearPendingTimers(), [clearPendingTimers]);
 
-  // Автоматическая пауза через 2 секунды после ответа всех игроков
+  // Автоматическая пауза через 2 секунды после проверки всех ответов админом
   useEffect(() => {
     if (state.phase !== 'question') return;
-    if (state.answers.length < state.players.length) return; // Не все ответили
+    if (state.answers.length !== state.players.length) return; // Не все ответили
+    if (!state.answers.every(a => a.checkedByAdmin)) return; // Не все проверены
 
     const timer = setTimeout(() => {
       updateState(prev => {
@@ -127,7 +128,7 @@ export default function AdminPanel({ state, updateState, onLogout }: Props) {
     }, 2000); // 2 секунды
 
     return () => clearTimeout(timer);
-  }, [state.phase, state.answers.length, state.players.length, state.currentQuestionIndex, updateState]);
+  }, [state.phase, state.answers, state.players.length, state.currentQuestionIndex, updateState]);
 
   const commitAnswerCheck = useCallback(
     (playerId: string, isCorrect: boolean) => {

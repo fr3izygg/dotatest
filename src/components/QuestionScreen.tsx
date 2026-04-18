@@ -25,6 +25,7 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
   const [answer, setAnswer] = useState('');
   const [savedAnswer, setSavedAnswer] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   /** Пока true — не перезаписываем поле из state.answers (иначе опрос ~300 мс сбрасывает режим «Изменить») */
   const [isEditingAnswer, setIsEditingAnswer] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -65,7 +66,9 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
 
   const handleSubmit = () => {
     const trimmed = answer.trim();
-    if (!trimmed) return;
+    if (!trimmed || isSubmitting) return;
+
+    setIsSubmitting(true);
 
     const newAnswer: PlayerAnswer = {
       playerId: currentPlayer.id,
@@ -86,6 +89,7 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
     setSavedAnswer(trimmed);
     setSubmitted(true);
     setIsEditingAnswer(false);
+    setIsSubmitting(false);
   };
 
   const handleEdit = () => {
@@ -264,7 +268,7 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
                   </div>
                   <button
                     onClick={handleSubmit}
-                    disabled={!answer.trim()}
+                    disabled={!answer.trim() || isSubmitting}
                     className="w-full bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all active:scale-[0.99]"
                   >
                     Отправить
@@ -285,7 +289,7 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
                     />
                     <button
                       onClick={handleSubmit}
-                      disabled={!answer.trim()}
+                      disabled={!answer.trim() || isSubmitting}
                       className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-5 py-3 rounded-xl transition-all active:scale-95 whitespace-nowrap"
                     >
                       Отправить

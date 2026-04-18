@@ -42,11 +42,12 @@ function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay }: { url: string
       showinfo: '0',
     });
     return (
-      <div className={`rounded-xl overflow-hidden border border-gray-800 ${aspectClass} bg-black`}>
+      <div className={`rounded-xl overflow-hidden border border-gray-800 ${aspectClass} bg-black relative`}>
         <iframe
           title="Видео к вопросу"
           src={`https://www.youtube.com/embed/${yt}?${params.toString()}`}
-          className="w-full h-full"
+          className="absolute inset-0 w-full h-full"
+          style={{ objectFit: 'cover' }}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         />
