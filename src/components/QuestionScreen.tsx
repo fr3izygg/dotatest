@@ -166,9 +166,9 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
       </div>
 
       {/* Question card */}
-      <div className="relative z-10 flex-1 w-full max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          <div className="lg:col-span-8 flex flex-col gap-4">
+      <div className="relative z-10 flex-1 w-full max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-[2.2fr_1fr] gap-6 items-start">
+          <div className="flex flex-col gap-4 min-h-[60vh]">
         {/* Meta */}
         <div className="flex items-center gap-3 mb-4 flex-wrap">
           <span className="text-gray-500 text-sm font-medium">
@@ -190,12 +190,12 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
             <div className="bg-[#161b22] border border-gray-800 rounded-2xl p-6 mb-4 shadow-xl">
               {state.phase === 'break' ? (
                 <>
-                  <QuestionMedia items={question.breakMedia || []} limitPlayback={false} autoPlay={autoPlay} muted={muted} className="h-[62vh] mb-4" />
+                  <QuestionMedia items={question.breakMedia || []} limitPlayback={false} autoPlay={autoPlay} muted={muted} className="h-[52vh] max-h-[72vh] mb-4" />
                   <p className="text-white text-lg font-medium leading-relaxed text-center">Перерыв между вопросами...</p>
                 </>
               ) : (
                 <>
-                  <QuestionMedia items={getQuestionMediaItems(question)} limitPlayback={limitPlayback} autoPlay={autoPlay} muted={muted} className="h-[62vh] mb-4" />
+                  <QuestionMedia items={getQuestionMediaItems(question)} limitPlayback={limitPlayback} autoPlay={autoPlay} muted={muted} className="h-[52vh] max-h-[72vh] mb-4" />
                   <p className="text-white text-lg font-medium leading-relaxed">{question.text}</p>
                 </>
               )}
@@ -261,9 +261,9 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
             </div>
           </div>
 
-          <div className="lg:col-span-4 flex flex-col gap-4">
+          <div className="lg:col-span-4 flex flex-col gap-4 self-start">
             {/* Answer section */}
-            <div className="bg-[#161b22] border border-gray-800 rounded-2xl p-5 shadow-xl">
+            <div className="lg:sticky lg:top-24 bg-[#161b22] border border-gray-800 rounded-2xl p-5 shadow-xl">
           {state.phase === 'paused' && !submitted && (
             <div className="flex items-center gap-2 mb-3 text-yellow-400 text-sm">
               <span>⏸</span>
@@ -304,10 +304,10 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
               ) : (
                 <>
                   <label className="block text-sm text-gray-400 mb-2">Твой ответ</label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-3 sm:flex-row">
                     <input
                       ref={inputRef}
-                      className="flex-1 bg-[#0d1117] border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/50 transition-all"
+                      className="flex-1 min-w-0 bg-[#0d1117] border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/50 transition-all"
                       placeholder="Введи ответ и нажми Enter..."
                       value={answer}
                       onChange={e => setAnswer(e.target.value)}
