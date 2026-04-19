@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { QuestionMediaItem } from '../store/gameStore';
 
 /** Извлекает id ролика YouTube из распространённых форматов URL */
@@ -29,12 +29,13 @@ function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay, muted, fill }: 
   const normalized = normalizeLocalUrl(url);
   const isDirect = /\.(mp4|webm|ogg)(\?.*)?$/i.test(normalized);
   const ref = useRef<HTMLVideoElement | null>(null);
+  const [aspectStyle, setAspectStyle] = useState<Record<string, string | number> | undefined>(undefined);
 
   if (yt) {
     const isShort = url.includes('shorts');
-    const aspectClass = isShort ? 'aspect-square' : 'aspect-video';
+    const aspectClass = isShort ? 'aspect-[9/16]' : 'aspect-video';
     const params = new URLSearchParams({
-      autoplay: (autoPlay && muted) ? '1' : '0', // Autoplay only if muted
+      autoplay: (autoPlay && muted) ? '1' : '0',
       mute: muted ? '1' : '0',
       controls: '0',
       modestbranding: '1',
@@ -42,12 +43,12 @@ function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay, muted, fill }: 
       showinfo: '0',
     });
     return (
-      <div className={`rounded-xl overflow-hidden border border-gray-800 ${fill ? 'h-full' : aspectClass} bg-black relative`}>
+      <div className={`rounded-xl overflow-hidden border border-gray-800 bg-black ${aspectClass}`}>
         <iframe
           title="Видео к вопросу"
           src={`https://www.youtube.com/embed/${yt}?${params.toString()}`}
-          className="absolute inset-0 w-full h-full"
-          style={{ objectFit: 'cover' }}
+          className="w-full h-full"
+          style={{ objectFit: 'contain' }}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         />
@@ -70,17 +71,24 @@ function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay, muted, fill }: 
     return () => el.removeEventListener('timeupdate', onTime);
   }, [limitPlayback, stopAtSeconds]);
 
+  const handleLoadedMetadata = () => {
+    const el = ref.current;
+    if (!el || !el.videoWidth || !el.videoHeight) return;
+    setAspectStyle({ aspectRatio: `${el.videoWidth}/${el.videoHeight}` });
+  };
+
   if (isDirect) {
     return (
-      <div className={`rounded-xl overflow-hidden border border-gray-800 bg-black relative ${fill ? 'h-full' : ''}`}>
+      <div className={`rounded-xl overflow-hidden border border-gray-800 bg-black ${fill ? 'h-full' : ''} max-h-[80vh]`} style={aspectStyle}>
         <video
           ref={ref}
           src={normalized}
           autoPlay={autoPlay}
           muted={muted}
           preload="metadata"
-          className="w-full h-full object-cover min-h-0"
+          className="w-full h-full object-contain"
           playsInline
+          onLoadedMetadata={handleLoadedMetadata}
         >
           Видео не поддерживается
         </video>
