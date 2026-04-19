@@ -168,7 +168,7 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
       {/* Question card */}
       <div className="relative z-10 flex-1 w-full max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          <div className="lg:col-span-7 flex flex-col">
+          <div className="lg:col-span-8 flex flex-col gap-4">
         {/* Meta */}
         <div className="flex items-center gap-3 mb-4 flex-wrap">
           <span className="text-gray-500 text-sm font-medium">
@@ -190,12 +190,12 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
             <div className="bg-[#161b22] border border-gray-800 rounded-2xl p-6 mb-4 shadow-xl">
               {state.phase === 'break' ? (
                 <>
-                  <QuestionMedia items={question.breakMedia || []} limitPlayback={false} autoPlay={autoPlay} muted={muted} />
+                  <QuestionMedia items={question.breakMedia || []} limitPlayback={false} autoPlay={autoPlay} muted={muted} className="h-[62vh] mb-4" />
                   <p className="text-white text-lg font-medium leading-relaxed text-center">Перерыв между вопросами...</p>
                 </>
               ) : (
                 <>
-                  <QuestionMedia items={getQuestionMediaItems(question)} limitPlayback={limitPlayback} autoPlay={autoPlay} muted={muted} />
+                  <QuestionMedia items={getQuestionMediaItems(question)} limitPlayback={limitPlayback} autoPlay={autoPlay} muted={muted} className="h-[62vh] mb-4" />
                   <p className="text-white text-lg font-medium leading-relaxed">{question.text}</p>
                 </>
               )}
@@ -261,7 +261,7 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
             </div>
           </div>
 
-          <div className="lg:col-span-5 flex flex-col">
+          <div className="lg:col-span-4 flex flex-col gap-4">
             {/* Answer section */}
             <div className="bg-[#161b22] border border-gray-800 rounded-2xl p-5 shadow-xl">
           {state.phase === 'paused' && !submitted && (

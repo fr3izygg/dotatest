@@ -24,7 +24,7 @@ function normalizeLocalUrl(url: string): string {
   return `${base.replace(/\/$/, '')}${normalizedPath}`;
 }
 
-function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay, muted }: { url: string; stopAtSeconds?: number; limitPlayback: boolean; autoPlay?: boolean; muted?: boolean }) {
+function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay, muted, fill }: { url: string; stopAtSeconds?: number; limitPlayback: boolean; autoPlay?: boolean; muted?: boolean; fill?: boolean }) {
   const yt = parseYoutubeVideoId(url);
   const normalized = normalizeLocalUrl(url);
   const isDirect = /\.(mp4|webm|ogg)(\?.*)?$/i.test(normalized);
@@ -42,7 +42,7 @@ function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay, muted }: { url:
       showinfo: '0',
     });
     return (
-      <div className={`rounded-xl overflow-hidden border border-gray-800 ${aspectClass} bg-black relative`}>
+      <div className={`rounded-xl overflow-hidden border border-gray-800 ${fill ? 'h-full' : aspectClass} bg-black relative`}>
         <iframe
           title="Видео к вопросу"
           src={`https://www.youtube.com/embed/${yt}?${params.toString()}`}
@@ -72,14 +72,14 @@ function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay, muted }: { url:
 
   if (isDirect) {
     return (
-      <div className="rounded-xl overflow-hidden border border-gray-800 bg-black">
+      <div className={`rounded-xl overflow-hidden border border-gray-800 bg-black relative ${fill ? 'h-full' : ''}`}>
         <video
           ref={ref}
           src={normalized}
           autoPlay={autoPlay}
           muted={muted}
           preload="metadata"
-          className="w-full max-h-72"
+          className="absolute inset-0 w-full h-full object-cover"
           playsInline
         >
           Видео не поддерживается
@@ -107,6 +107,8 @@ interface Props {
   autoPlay?: boolean;
   /** Если true: видео без звука */
   muted?: boolean;
+  /** Если true: видео растягивается по контейнеру */
+  fill?: boolean;
   className?: string;
 }
 
@@ -117,27 +119,34 @@ export default function QuestionMedia({ items, limitPlayback = false, autoPlay =
 
   return (
     <div className={className}>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-      {list.map((m, idx) => {
-        const key = `${m.kind}-${idx}-${m.url.slice(0, 24)}`;
-        if (m.kind === 'image') {
+      <div className="grid grid-cols-1 gap-3">
+        {list.map((m, idx) => {
+          const key = `${m.kind}-${idx}-${m.url.slice(0, 24)}`;
+          if (m.kind === 'image') {
+            return (
+              <div key={key} className="rounded-xl overflow-hidden border border-gray-800">
+                <img
+                  src={normalizeLocalUrl(m.url)}
+                  alt={`Иллюстрация ${idx + 1}`}
+                  className="w-full max-h-80 object-contain bg-black/40"
+                />
+              </div>
+            );
+          }
+
           return (
-            <div key={key} className="rounded-xl overflow-hidden border border-gray-800">
-              <img
-                src={normalizeLocalUrl(m.url)}
-                alt={`Иллюстрация ${idx + 1}`}
-                className="w-full max-h-80 object-contain bg-black/40"
+            <div key={key} className="rounded-3xl overflow-hidden border border-gray-800 bg-black h-full">
+              <OneVideo
+                url={m.url}
+                stopAtSeconds={m.stopAtSeconds}
+                limitPlayback={limitPlayback}
+                autoPlay={autoPlay}
+                muted={muted}
+                fill
               />
             </div>
           );
-        }
-        // Видео на больших экранах занимает всю ширину сетки
-        return (
-          <div key={key} className="lg:col-span-2">
-            <OneVideo url={m.url} stopAtSeconds={m.stopAtSeconds} limitPlayback={limitPlayback} autoPlay={autoPlay} muted={muted} />
-          </div>
-        );
-      })}
+        })}
       </div>
     </div>
   );
