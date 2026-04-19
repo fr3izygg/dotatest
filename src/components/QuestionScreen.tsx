@@ -32,6 +32,15 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
   const prevQuestionIndex = useRef(state.currentQuestionIndex);
 
   const [timeLeft, setTimeLeft] = useState(20);
+  const [volume, setVolume] = useState(0.6);
+
+  const restartVideos = () => {
+    const videos = document.querySelectorAll('video');
+    videos.forEach(video => {
+      video.currentTime = 0;
+      video.play().catch(() => {});
+    });
+  };
 
   const isChoice = question?.responseMode === 'choice' && (question.choices?.filter(c => c.trim()).length ?? 0) > 0;
 
@@ -195,7 +204,30 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
                 </>
               ) : (
                 <>
-                  <QuestionMedia items={getQuestionMediaItems(question)} limitPlayback={limitPlayback} autoPlay={autoPlay} muted={muted} className="mx-auto w-full max-w-[900px] mb-4 min-h-0" />
+                  <QuestionMedia items={getQuestionMediaItems(question)} limitPlayback={limitPlayback} autoPlay={autoPlay} muted={muted} volume={volume} className="mx-auto w-full max-w-[900px] mb-4 min-h-0" />
+                  {getQuestionMediaItems(question).length > 0 && (
+                    <div className="flex items-center justify-center gap-4 mb-4">
+                      <button
+                        onClick={restartVideos}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                      >
+                        🔄 Повторить видео
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-400 text-sm">🔊</span>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.1"
+                          value={volume}
+                          onChange={(e) => setVolume(parseFloat(e.target.value))}
+                          className="w-20 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                        />
+                        <span className="text-gray-400 text-sm">{Math.round(volume * 100)}%</span>
+                      </div>
+                    </div>
+                  )}
                   <p className="text-white text-lg font-medium leading-relaxed">{question.text}</p>
                 </>
               )}

@@ -24,7 +24,7 @@ function normalizeLocalUrl(url: string): string {
   return `${base.replace(/\/$/, '')}${normalizedPath}`;
 }
 
-function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay, muted, fill }: { url: string; stopAtSeconds?: number; limitPlayback: boolean; autoPlay?: boolean; muted?: boolean; fill?: boolean }) {
+function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay, muted, volume }: { url: string; stopAtSeconds?: number; limitPlayback: boolean; autoPlay?: boolean; muted?: boolean; volume?: number }) {
   const yt = parseYoutubeVideoId(url);
   const normalized = normalizeLocalUrl(url);
   const isDirect = /\.(mp4|webm|ogg)(\?.*)?$/i.test(normalized);
@@ -71,11 +71,12 @@ function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay, muted, fill }: 
     return () => el.removeEventListener('timeupdate', onTime);
   }, [limitPlayback, stopAtSeconds]);
 
-  const handleLoadedMetadata = () => {
+  useEffect(() => {
     const el = ref.current;
-    if (!el || !el.videoWidth || !el.videoHeight) return;
-    setAspectStyle({ aspectRatio: `${el.videoWidth}/${el.videoHeight}` });
-  };
+    if (el && volume !== undefined) {
+      el.volume = volume;
+    }
+  }, [volume]);
 
   if (isDirect) {
     return (
@@ -118,12 +119,14 @@ interface Props {
   autoPlay?: boolean;
   /** Если true: видео без звука */
   muted?: boolean;
+  /** Громкость видео (0-1) */
+  volume?: number;
   /** Если true: видео растягивается по контейнеру */
   fill?: boolean;
   className?: string;
 }
 
-export default function QuestionMedia({ items, limitPlayback = false, autoPlay = false, muted = false, fill = false, className = '' }: Props) {
+export default function QuestionMedia({ items, limitPlayback = false, autoPlay = false, muted = false, volume = 0.6, fill = false, className = '' }: Props) {
   const list = useMemo(() => items.filter(m => m.url?.trim()), [items]);
   const wrapperClass = `${className} min-h-0 overflow-hidden`;
 
@@ -154,6 +157,7 @@ export default function QuestionMedia({ items, limitPlayback = false, autoPlay =
                 limitPlayback={limitPlayback}
                 autoPlay={autoPlay}
                 muted={muted}
+                volume={volume}
               />
             </div>
           );
