@@ -79,7 +79,7 @@ function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay, muted, fill }: 
           autoPlay={autoPlay}
           muted={muted}
           preload="metadata"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="w-full h-full object-cover"
           playsInline
         >
           Видео не поддерживается
