@@ -190,12 +190,12 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
             <div className="bg-[#161b22] border border-gray-800 rounded-2xl p-6 mb-4 shadow-xl overflow-hidden">
               {state.phase === 'break' ? (
                 <>
-                  <QuestionMedia items={question.breakMedia || []} limitPlayback={false} autoPlay={autoPlay} muted={muted} className="h-[48vh] max-h-[62vh] mb-4 min-h-0" />
+                  <QuestionMedia items={question.breakMedia || []} limitPlayback={false} autoPlay={autoPlay} muted={muted} className="mx-auto w-full max-w-[900px] mb-4 min-h-0" />
                   <p className="text-white text-lg font-medium leading-relaxed text-center">Перерыв между вопросами...</p>
                 </>
               ) : (
                 <>
-                  <QuestionMedia items={getQuestionMediaItems(question)} limitPlayback={limitPlayback} autoPlay={autoPlay} muted={muted} className="h-[48vh] max-h-[62vh] mb-4 min-h-0" />
+                  <QuestionMedia items={getQuestionMediaItems(question)} limitPlayback={limitPlayback} autoPlay={autoPlay} muted={muted} className="mx-auto w-full max-w-[900px] mb-4 min-h-0" />
                   <p className="text-white text-lg font-medium leading-relaxed">{question.text}</p>
                 </>
               )}

@@ -43,7 +43,7 @@ function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay, muted, fill }: 
       showinfo: '0',
     });
     return (
-      <div className={`rounded-xl overflow-hidden border border-gray-800 bg-black ${aspectClass}`}>
+      <div className={`rounded-xl overflow-hidden border border-gray-800 bg-black mx-auto max-w-[90vw] max-h-[80vh] ${aspectClass}`}>
         <iframe
           title="Видео к вопросу"
           src={`https://www.youtube.com/embed/${yt}?${params.toString()}`}
@@ -79,7 +79,10 @@ function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay, muted, fill }: 
 
   if (isDirect) {
     return (
-      <div className={`rounded-xl overflow-hidden border border-gray-800 bg-black ${fill ? 'h-full' : ''} max-h-[80vh]`} style={aspectStyle}>
+      <div
+        className="rounded-xl overflow-hidden border border-gray-800 bg-black mx-auto max-w-[90vw]"
+        style={{ width: '100%', aspectRatio: aspectStyle?.aspectRatio ?? '16/9', ...aspectStyle, maxHeight: '80vh' }}
+      >
         <video
           ref={ref}
           src={normalized}
@@ -144,14 +147,13 @@ export default function QuestionMedia({ items, limitPlayback = false, autoPlay =
           }
 
           return (
-            <div key={key} className="rounded-3xl overflow-hidden border border-gray-800 bg-black h-full">
+            <div key={key} className="rounded-3xl overflow-hidden border border-gray-800 bg-black">
               <OneVideo
                 url={m.url}
                 stopAtSeconds={m.stopAtSeconds}
                 limitPlayback={limitPlayback}
                 autoPlay={autoPlay}
                 muted={muted}
-                fill
               />
             </div>
           );
