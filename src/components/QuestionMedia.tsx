@@ -79,7 +79,7 @@ function OneVideo({ url, stopAtSeconds, limitPlayback, autoPlay, muted, fill }: 
           autoPlay={autoPlay}
           muted={muted}
           preload="metadata"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover min-h-0"
           playsInline
         >
           Видео не поддерживается
@@ -112,14 +112,15 @@ interface Props {
   className?: string;
 }
 
-export default function QuestionMedia({ items, limitPlayback = false, autoPlay = false, muted = false, className = '' }: Props) {
+export default function QuestionMedia({ items, limitPlayback = false, autoPlay = false, muted = false, fill = false, className = '' }: Props) {
   const list = useMemo(() => items.filter(m => m.url?.trim()), [items]);
+  const wrapperClass = `${className} min-h-0 overflow-hidden`;
 
   if (list.length === 0) return null;
 
   return (
-    <div className={className}>
-      <div className="grid grid-cols-1 gap-3">
+    <div className={wrapperClass}>
+      <div className="grid grid-cols-1 gap-3 min-h-0">
         {list.map((m, idx) => {
           const key = `${m.kind}-${idx}-${m.url.slice(0, 24)}`;
           if (m.kind === 'image') {

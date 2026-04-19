@@ -187,15 +187,15 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
         </div>
 
             {/* Question text */}
-            <div className="bg-[#161b22] border border-gray-800 rounded-2xl p-6 mb-4 shadow-xl">
+            <div className="bg-[#161b22] border border-gray-800 rounded-2xl p-6 mb-4 shadow-xl overflow-hidden">
               {state.phase === 'break' ? (
                 <>
-                  <QuestionMedia items={question.breakMedia || []} limitPlayback={false} autoPlay={autoPlay} muted={muted} className="h-[52vh] max-h-[72vh] mb-4" />
+                  <QuestionMedia items={question.breakMedia || []} limitPlayback={false} autoPlay={autoPlay} muted={muted} className="h-[48vh] max-h-[62vh] mb-4 min-h-0" />
                   <p className="text-white text-lg font-medium leading-relaxed text-center">Перерыв между вопросами...</p>
                 </>
               ) : (
                 <>
-                  <QuestionMedia items={getQuestionMediaItems(question)} limitPlayback={limitPlayback} autoPlay={autoPlay} muted={muted} className="h-[52vh] max-h-[72vh] mb-4" />
+                  <QuestionMedia items={getQuestionMediaItems(question)} limitPlayback={limitPlayback} autoPlay={autoPlay} muted={muted} className="h-[48vh] max-h-[62vh] mb-4 min-h-0" />
                   <p className="text-white text-lg font-medium leading-relaxed">{question.text}</p>
                 </>
               )}
@@ -261,9 +261,9 @@ export default function QuestionScreen({ state, currentPlayer, updateState }: Pr
             </div>
           </div>
 
-          <div className="lg:col-span-4 flex flex-col gap-4 self-start">
+          <div className="lg:col-span-4 flex flex-col gap-4 self-start min-w-[320px]">
             {/* Answer section */}
-            <div className="lg:sticky lg:top-24 bg-[#161b22] border border-gray-800 rounded-2xl p-5 shadow-xl">
+            <div className="lg:sticky lg:top-24 bg-[#161b22] border border-gray-800 rounded-2xl p-5 shadow-xl overflow-hidden">
           {state.phase === 'paused' && !submitted && (
             <div className="flex items-center gap-2 mb-3 text-yellow-400 text-sm">
               <span>⏸</span>
